@@ -1,0 +1,174 @@
+Bootstrap: docker
+From: bitnami/minideb:bullseye
+
+
+%environment
+	export LC_ALL=C
+
+
+%post
+	apt-get update && apt-get upgrade -y
+	apt-get -y install \
+	automake \
+	autoconf \
+	g++ \
+	gcc \
+	git \
+	gfortran \
+	make \
+	cmake \
+	curl \
+	m4 \
+	nano \
+	perl \
+	default-jre \
+	python3 \
+	python3-dev \
+	python3-distutils \
+	python3-pip \
+	libxml2-dev \
+	libssl-dev \
+	libdb-dev \
+	libreadline-dev \
+	libx11-dev \
+	libxt-dev \
+	libpcre2-dev \
+	libfindbin-libs-perl \
+	libncurses5-dev \
+	libncursesw5-dev \
+	libhdf5-dev \
+	liblzma-dev \
+	zlib1g-dev \
+	libcurl4-openssl-dev \
+	libbz2-dev \
+	rsync \
+	wget \
+	unzip \
+	x11-common	
+	
+	#Installing additional python stuff
+	pip3 install numpy
+
+	export BIN=/usr/local/bin
+	export SRC=/usr/local/src
+	
+	#bowtie
+	cd /
+	wget https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.3.1/bowtie-1.3.1-linux-x86_64.zip/download -O bowtie-1.3.1-linux-x86_64.zip && \
+	unzip /bowtie-1.3.1-linux-x86_64.zip && \
+	mv /bowtie-1.3.1-linux-x86_64/bowtie* ${BIN}
+	rm -r /bowtie-1.3.1-linux-x86_64.zip
+
+	#bowtie2
+	cd /
+	wget https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.4.5/bowtie2-2.4.5-linux-x86_64.zip/download -O bowtie2-2.4.5-linux-x86_64.zip
+	unzip /bowtie2-2.4.5-linux-x86_64.zip && \
+	mv /bowtie2-2.4.5-linux-x86_64/bowtie2* ${BIN}
+	rm -r /bowtie2-2.4.5-linux-x86_64.zip
+
+	#Jellyfish
+	cd /
+	wget https://github.com/gmarcais/Jellyfish/releases/download/v2.3.0/jellyfish-2.3.0.tar.gz && \
+	tar -xvf /jellyfish-2.3.0.tar.gz && \
+	rm -r /jellyfish-2.3.0.tar.gz && \
+	cd /jellyfish-2.3.0 && \
+	./configure && make && make install
+
+	#Samtools
+	cd /
+	wget https://github.com/samtools/samtools/releases/download/1.15.1/samtools-1.15.1.tar.bz2 && \
+	tar -xvjf /samtools-1.15.1.tar.bz2 && \
+	rm -r /samtools-1.15.1.tar.bz2 && \
+	cd /samtools-1.15.1 && \
+	./configure && make && make install && \
+	
+	#RSEM
+	cd /
+	wget https://github.com/deweylab/RSEM/archive/refs/tags/v1.3.3.tar.gz
+	tar -xvf v1.3.3.tar.gz
+	rm -r v1.3.3.tar.gz
+	cd RSEM-1.3.3
+	make && make install	
+
+	#Htslib
+	cd /
+	wget https://github.com/samtools/htslib/releases/download/1.15.1/htslib-1.15.1.tar.bz2 && \
+	tar -xvjf /htslib-1.15.1.tar.bz2 && \
+	rm -r /htslib-1.15.1.tar.bz2 && \
+	cd /htslib-1.15.1 && \
+	make
+
+	#Kallisto
+	cd /
+	git clone https://github.com/pachterlab/kallisto.git
+	cd /kallisto
+	#make htslib
+	cd ext/htslib
+	autoheader
+	autoconf
+	cd ../..
+	#there might be no need to do thos beacsue htslib is already installed in the container
+	#Building kallisto
+	mkdir build && cd build
+	cmake ..
+	make
+	make install
+
+	#salmon
+	cd /
+	wget https://github.com/COMBINE-lab/salmon/releases/download/v1.9.0/salmon-1.9.0_linux_x86_64.tar.gz
+	tar -xvf salmon-1.9.0_linux_x86_64.tar.gz
+	rm -r salmon-1.9.0_linux_x86_64.tar.gz
+	mv /salmon-1.9.0_linux_x86_64/bin/salmon /usr/local/bin/salmon
+	mv /salmon-1.9.0_linux_x86_64/lib/* /usr/local/bin/
+	rm -r /salmon-1.9.0_linux_x86_64
+	
+	#Installing R
+	cd /
+	wget https://cran.r-project.org/src/base/R-4/R-4.2.2.tar.gz
+	tar -xvf /R-4.2.2.tar.gz
+	rm /R-4.2.2.tar.gz
+	cd /R-4.2.2
+	./configure && make && make install
+
+	cd ..
+	
+	R -e 'install.packages("BiocManager", repos="http://cran.us.r-project.org")'
+	R -e 'BiocManager::install("tidyverse")'
+	R -e 'BiocManager::install("edgeR")'
+	R -e 'BiocManager::install("DESeq2")'
+	R -e 'BiocManager::install("ape")'
+	R -e 'BiocManager::install("ctc")'
+	R -e 'BiocManager::install("gplots")'
+	R -e 'BiocManager::install("Biobase", force = TRUE)'
+	R -e 'BiocManager::install("qvalue")'
+	R -e 'BiocManager::install("goseq")'
+	R -e 'BiocManager::install("Glimma")'
+	R -e 'BiocManager::install("ROTS")'
+	R -e 'BiocManager::install("GOplot")'
+	R -e 'BiocManager::install("argparse")'
+	R -e 'BiocManager::install("fastcluster")'
+	R -e 'BiocManager::install("DEXSeq")'
+	R -e 'BiocManager::install("tximport")'
+	R -e 'BiocManager::install("tximportData", timeout = 3000)'
+
+	##Trinity
+	ln -s /usr/bin/python3.9 /usr/bin/python
+	cd /
+	wget https://github.com/trinityrnaseq/trinityrnaseq/releases/download/Trinity-v2.14.0/trinityrnaseq-v2.14.0.FULL.tar.gz
+	tar -xvf trinityrnaseq-v2.14.0.FULL.tar.gz
+	rm -r trinityrnaseq-v2.14.0.FULL.tar.gz
+	cd /trinityrnaseq-v2.14.0
+	make && make plugins && \
+	make install
+	echo "export PATH=/usr/local/bin:/usr/local/bin/util:/usr/local/bin/util/support_scripts:/usr/local/bin/util/PBS:/usr/local/bin/util/R:/usr/local/bin/util/misc:/usr/local/bin/Analysis/DifferentialExpression:$PATH" >> $SINGULARITY_ENVIRONMENT
+	echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib" >> $SINGULARITY_ENVIRONMENT
+	echo "LD_LIBRARY=$LD_LIBRARY:/usr/local/lib" >> $SINGULARITY_ENVIRONMENT
+	chmod +x /.singularity.d/env/91-environment.sh 
+
+%labels
+rjmadzime
+
+
+	
+	
