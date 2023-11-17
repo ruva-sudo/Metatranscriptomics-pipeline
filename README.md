@@ -38,6 +38,8 @@ this value will depend on available resources on execution infrastructure and th
 
 `--bowtie2_thr` [OPTIONAL] defines the threads to be made available for bowtie2, default is 8
 
+`--outdir` [OPTIONAL] specifies the name of the output directory to save pipeline output to. Default name is results.
+
 # Requirements for running pipeline
 
 Nextflow 21 or higher
