@@ -40,9 +40,9 @@ this value will depend on available resources on execution infrastructure and th
 
 # Requirements for running pipeline
 
-Nextflow 21+
+Nextflow 21 or higher
 
-Singularity 3.5+
+Singularity 3.5 or higher
 
 # Input
 
